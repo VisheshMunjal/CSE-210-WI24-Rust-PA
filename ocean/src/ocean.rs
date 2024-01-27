@@ -8,23 +8,29 @@ use std::slice::Iter;
 #[derive(Debug)]
 pub struct Ocean {
     // TODO: Fill in fields here.
+    pub reefs: Vec<Rc<RefCell<Reef>>>,
+    pub beaches: Vec<Beach>
 }
 
 impl Ocean {
     pub fn new() -> Ocean {
-        unimplemented!();
+        //unimplemented!();
+        Ocean{reefs: Vec::new(), beaches: Vec::new()}
     }
 
     pub fn add_beach(&mut self, beach: Beach) {
-        unimplemented!();
+        //unimplemented!();
+        self.beaches.push(beach);
     }
 
     pub fn beaches(&self) -> Iter<Beach> {
-        unimplemented!();
+        //unimplemented!();
+        self.beaches.iter()
     }
 
     pub fn reefs(&self) -> Iter<Rc<RefCell<Reef>>> {
-        unimplemented!();
+        //unimplemented!();
+        self.reefs.iter()
     }
 
     /**
@@ -41,6 +47,25 @@ impl Ocean {
         n_clams: u32,
         n_algae: u32,
     ) -> Rc<RefCell<Reef>> {
-        unimplemented!();
+        let mut reef = Reef::new();
+
+        // Add Minnows, Shrimp, Clams, and Algae to the Reef
+        for _ in 0..n_minnows {
+            reef.add_prey(Box::new(Minnow::new(25)));
+        }
+        for _ in 0..n_shrimp {
+            reef.add_prey(Box::new(Shrimp::new(1)));
+        }
+        for _ in 0..n_clams {
+            reef.add_prey(Box::new(Clam::new()));
+        }
+        for _ in 0..n_algae {
+            reef.add_prey(Box::new(Algae::new()));
+        }
+        let reef_rc = Rc::new(RefCell::new(reef));
+        self.reefs.push(Rc::clone(&reef_rc));
+
+        reef_rc
     }
 }
+
