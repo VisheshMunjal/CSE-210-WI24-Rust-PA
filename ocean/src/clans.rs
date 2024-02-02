@@ -8,7 +8,9 @@ pub struct ClanSystem {
 
 impl ClanSystem {
     pub fn new() -> ClanSystem {
-        ClanSystem {clans: HashMap::new()}
+        ClanSystem {
+            clans: HashMap::new()
+        }
     }
 
     /**
@@ -36,11 +38,7 @@ impl ClanSystem {
      */
     pub fn get_clan_member_count(&self, clan_id: &str) -> usize {
         //unimplemented!();
-        if let Some(members) = self.clans.get(clan_id) {
-            members.len()
-        } else {
-            0
-        }
+        self.clans.get(clan_id).map_or(0, |members| members.len())
     }
 
     /**
@@ -50,6 +48,7 @@ impl ClanSystem {
         let largest_clan = self.clans.iter().max_by_key(|(_, members)| members.len());
         largest_clan.map(|(clan_id, _)| clan_id.clone())
     }
+    // This add a member to the clan given an id of clan and name of crab
     pub fn add_member_to_clan(&mut self, clan_id: String, crab_name: String) {
         let clan = self.clans.entry(clan_id).or_insert_with(HashSet::new);
         clan.insert(crab_name);
