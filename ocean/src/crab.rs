@@ -9,28 +9,38 @@ use std::rc::Rc;
 #[derive(Debug)]
 pub struct Crab {
     // TODO: Add fields here (some in part 1, some in part 2)
+    pub name: String,
+    pub speed: u32,
+    pub color: Color,
+    pub diet: Diet,
+    pub reefs: Vec<Rc<RefCell<Reef>>>,
 }
 
 // Do NOT implement Copy for Crab.
 impl Crab {
     pub fn new(name: String, speed: u32, color: Color, diet: Diet) -> Crab {
-        unimplemented!();
+        // unimplemented!();
+        Crab{name, speed, color, diet, reefs: Vec::new()}
     }
 
     pub fn name(&self) -> &str {
-        unimplemented!();
+        // unimplemented!();
+        &self.name
     }
 
     pub fn speed(&self) -> u32 {
-        unimplemented!();
+        //unimplemented!();
+        self.speed
     }
 
     pub fn color(&self) -> &Color {
-        unimplemented!();
+        //unimplemented!();
+        &self.color
     }
 
     pub fn diet(&self) -> Diet {
-        unimplemented!();
+        //unimplemented!();
+        self.diet
     }
 
     // PART 2 BELOW
@@ -40,7 +50,8 @@ impl Crab {
      * Have this crab discover a new reef, adding it to its list of reefs.
      */
     pub fn discover_reef(&mut self, reef: Rc<RefCell<Reef>>) {
-        unimplemented!();
+        //unimplemented!();
+        self.reefs.push(reef);
     }
 
     /**
@@ -53,14 +64,29 @@ impl Crab {
      * If all reefs are empty, or this crab has no reefs, return None.
      */
     fn catch_prey(&mut self) -> Option<(Box<dyn Prey>, usize)> {
-        unimplemented!();
+        for (index, reef_rc) in self.reefs.iter_mut().enumerate() {
+            // Unwrap the RefCell to access the Reef
+            if let Ok(mut reef) = reef_rc.try_borrow_mut() {
+                // Call take_prey on the Reef
+                if let Some(prey) = reef.take_prey() {
+                    return Some((prey, index));
+                }
+            }
+        }
+        None
     }
 
     /**
      * Releases the given prey back into the reef at the given index.
      */
     fn release_prey(&mut self, prey: Box<dyn Prey>, reef_index: usize) {
-        unimplemented!();
+        if let Some(reef_rc) = self.reefs.get(reef_index) {
+            // Unwrap the RefCell to access the Reef
+            if let Ok(mut reef) = reef_rc.try_borrow_mut() {
+                // Call add_prey on the Reef
+                reef.add_prey(prey);
+            }
+        }
     }
 
     /**
@@ -99,10 +125,29 @@ impl Crab {
      *
      * Note: this pseudocode reads like a terrible poem.
      */
-    pub fn hunt(&mut self) -> bool {
-        unimplemented!();
+     pub fn hunt(&mut self) -> bool {
+        let mut escaped_prey = Vec::new();
+        let mut prey_caught = false;
+        let mut index = 0;
+    
+        while let Some((mut prey, i)) = self.catch_prey() {
+            index = i;  // Store the index before the loop breaks
+    
+            if prey.try_escape(self) || self.diet != prey.diet() {
+                escaped_prey.push((prey, index));
+            } else {
+                prey_caught = true;
+                break;
+            }
+        }
+    
+        for (escaped, index) in escaped_prey {
+            self.release_prey(escaped, index);
+        }
+    
+        prey_caught
     }
-
+    
     /**
      * Returns Some of any recipe from the given cookbook that matches the crab's diet
      * preferences, or None if no such recipe exists.
@@ -111,7 +156,12 @@ impl Crab {
      * up to you to figure out which ones and where. Do not make any other changes
      * to the signature.
      */
-    pub fn choose_recipe(&self, cookbook: &Cookbook) -> Option<&Recipe> {
-        unimplemented!();
+    pub fn choose_recipe<'a>(&self, cookbook: &'a Cookbook) -> Option<&'a Recipe> {
+        let matching_recipes: Vec<&Recipe> = cookbook.recipes()
+            .filter(|recipe| self.diet == recipe.diet())
+            .collect();
+
+        matching_recipes.first().cloned()
+
     }
 }
